@@ -6,7 +6,7 @@ Plataforma de análisis y gestión de consolas y videojuegos. Aplicación web qu
 
 | Capa | Tecnología |
 |---|---|
-| Backend | Python con FastAPI |
+| Backend | Python con FastAPI y SQLAlchemy |
 | Frontend | React (Vite) sobre Node.js |
 | Base de datos | SQLite |
 
