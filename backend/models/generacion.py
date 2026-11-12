@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint
+from sqlalchemy import CheckConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -23,6 +23,7 @@ class Generacion(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     numero: Mapped[int] = mapped_column(unique=True, nullable=False)
+    etiqueta: Mapped[str | None] = mapped_column(String(50), nullable=True)
     anio_inicio: Mapped[int | None] = mapped_column(nullable=True)
     anio_fin: Mapped[int | None] = mapped_column(nullable=True)
 

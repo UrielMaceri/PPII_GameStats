@@ -62,6 +62,42 @@ Backend y frontend se ejecutan al mismo tiempo, cada uno en su propia terminal.
 
 En desarrollo, Vite redirige las llamadas que empiezan con `/api` hacia `http://127.0.0.1:8000`. Las rutas de la API que use el frontend deben comenzar con `/api`.
 
+### 5. Crear y poblar la base SQLite
+
+Desde la raíz del repositorio, ejecutar:
+
+```powershell
+cd backend
+python -m pip install -r requirements.txt
+python -m data.import_consoles
+```
+
+El importador crea `backend/data/gamestats.db` y las tablas declaradas por los
+modelos SQLAlchemy. Lee `backend/data/docs/Console_Data.csv` y relaciona
+fabricantes, generaciones y consolas. Se puede volver a ejecutar: actualiza las
+consolas que ya existen y agrega las nuevas, sin borrar datos.
+
+Los años de lanzamiento y discontinuación se guardan como años, no como fechas
+inventadas. Los rangos de generación abiertos (`año-Ongoing`) guardan el año de
+fin como desconocido. El valor `ongoing` en discontinuación se representa con
+`sigue_en_produccion`; las ventas se conservan en la unidad de origen del CSV:
+millones de unidades. Como el dataset no incluye países, el importador completa
+ese dato con el mapeo de países de origen proporcionado para Atari, Magnavox,
+Mattel, Microsoft, Nintendo, Sega y Sony. El archivo `.db` es generado
+localmente y está excluido de Git.
+
+### 6. Consultar una consola por ID
+
+Después de preparar la base, ejecutar desde `backend`:
+
+```powershell
+python -m data.query_console
+```
+
+Ingresar el ID de la consola. El programa muestra sus datos y, de forma
+escalonada, el fabricante, la generación y los videojuegos asociados, incluyendo
+publisher y desarrollador cuando están disponibles.
+
 ## Estructura del proyecto
 
 ```text
@@ -109,9 +145,9 @@ Verificar que el backend esté corriendo en el puerto `8000` y que las llamadas 
 ## Integrantes
 
 ### Backend
-- Uriel Maceri
+- Uriel Maceri (DBA)
 - Enzo Paez
-- Lucas Roman (DBA)
+- Lucas Roman 
 
 ### Frontend
 - Matias Mamani
@@ -123,7 +159,7 @@ En la raíz del repositorio hay dos scripts para simplificar el trabajo diario:
 
 | Script | Qué hace |
 |---|---|
-| `build.bat` | Verifica que los archivos Python del backend compilen sintácticamente |
+| `build.bat` | Prepara el entorno Python y crea/actualiza la base SQLite desde el CSV, sin borrarla |
 | `run.bat` | Levanta el backend y el frontend, cada uno en su propia ventana |
 
 ```bat
@@ -132,5 +168,6 @@ run.bat
 ```
 
 - `run.bat` crea el entorno virtual e instala las dependencias del backend si todavía no están instaladas; también instala las dependencias del frontend la primera vez.
+- `build.bat` crea las tablas que falten e importa o actualiza las consolas del CSV. No borra la base ni los videojuegos existentes.
 - `build.bat nopause` omite la pausa final.
 - Para detener los servicios, cerrar cada ventana o presionar `Ctrl+C` en ellas.
