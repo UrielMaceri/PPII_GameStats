@@ -841,4 +841,87 @@ function App() {
   )
 }
 
-export default App
+export default function App() {
+  const [currentView, setCurrentView] = useState('catalog') // 'catalog' o 'about'
+
+  // Contenedores vacíos o placeholders listos para cuando agregues los dashboards
+  const emptyDashboards = [1, 2, 3, 4]
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#0c121c]">
+      {/* Barra de Navegación */}
+      <header className="topbar sticky top-0 z-50">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentView('catalog')}>
+          <span className="brand-mark">G</span>
+          <span className="brand text-lg font-bold">Observatorio de videojuegos</span>
+        </div>
+        <nav className="flex space-x-6">
+          <button
+            onClick={() => setCurrentView('catalog')}
+            className={`transition-colors font-medium pb-1 border-b-2 ${
+              currentView === 'catalog'
+                ? 'border-[#55d6c2] text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            Catálogo
+          </button>
+          <button
+            onClick={() => setCurrentView('about')}
+            className={`transition-colors font-medium pb-1 border-b-2 ${
+              currentView === 'about'
+                ? 'border-[#55d6c2] text-white'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            Sobre nosotros
+          </button>
+        </nav>
+      </header>
+
+      {/* Contenido Principal */}
+      <main className="dashboard flex-1">
+        {currentView === 'catalog' ? (
+          <div>
+            <section className="page-heading">
+              <div>
+                <p className="eyebrow">PANEL PRINCIPAL</p>
+                <h1>Catálogo de dashboards</h1>
+                <p className="page-description">
+                  Espacio reservado para las visualizaciones y métricas del observatorio.
+                </p>
+              </div>
+            </section>
+
+            {/* Grid de cards vacías */}
+            <section className="charts-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+              {emptyDashboards.map((id) => (
+                <article 
+                  key={id} 
+                  className="chart-card flex flex-col items-center justify-center p-8 bg-[#121b28] border border-[#263345] rounded-xl min-h-[220px] text-center"
+                >
+                  <span className="text-xs text-gray-500 font-mono mb-2">#{id}</span>
+                  <p className="text-gray-400 text-sm italic">Dashboard vacío (Próximamente)</p>
+                </article>
+              ))}
+            </section>
+          </div>
+        ) : (
+          /* Sección Sobre nosotros */
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="bg-[#121b28] border border-[#263345] p-12 rounded-2xl max-w-lg w-full shadow-2xl">
+              <span className="text-5xl mb-4 block">🏆</span>
+              <h2 className="text-2xl font-bold text-[#f0f5fa] mb-3">Sobre nosotros</h2>
+              <p className="text-xl text-[#55d6c2] font-semibold">Trabajo final Equipo 4</p>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Pie de página */}
+      <footer className="footer border-t border-[#263345] py-6 text-center text-sm text-[#718198]">
+        Observatorio de videojuegos <span>•</span> Trabajo final Equipo 4 &copy; 2026
+      </footer>
+    </div>
+  )
+}
