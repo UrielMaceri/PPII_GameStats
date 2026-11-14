@@ -35,12 +35,21 @@ if errorlevel 1 (
 
 pushd "%BACKEND%"
 "%PYTHON%" -m data.import_consoles
+if errorlevel 1 (
+    popd
+    echo.
+    echo [ERROR] No se pudieron importar las consolas.
+    if /i not "%~1"=="nopause" pause
+    exit /b 1
+)
+
+"%PYTHON%" -m data.import_games
 set "RESULT=%ERRORLEVEL%"
 popd
 
 if not "%RESULT%"=="0" (
     echo.
-    echo [ERROR] No se pudo preparar la base de datos.
+    echo [ERROR] No se pudieron importar los videojuegos.
     if /i not "%~1"=="nopause" pause
     exit /b %RESULT%
 )

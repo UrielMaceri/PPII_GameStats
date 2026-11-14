@@ -70,12 +70,15 @@ Desde la raíz del repositorio, ejecutar:
 cd backend
 python -m pip install -r requirements.txt
 python -m data.import_consoles
+python -m data.import_games
 ```
 
-El importador crea `backend/data/gamestats.db` y las tablas declaradas por los
-modelos SQLAlchemy. Lee `backend/data/docs/Console_Data.csv` y relaciona
-fabricantes, generaciones y consolas. Se puede volver a ejecutar: actualiza las
-consolas que ya existen y agrega las nuevas, sin borrar datos.
+Los importadores crean `backend/data/gamestats.db` y las tablas declaradas por
+los modelos SQLAlchemy. El primero lee `Console_Data.csv` y carga fabricantes,
+generaciones y consolas. El segundo lee `scrapped_data.csv` y carga videojuegos,
+publishers y desarrolladores relacionados con sus consolas. Se pueden volver a
+ejecutar: actualizan los registros fuente y agregan los nuevos, sin borrar datos
+que ya existan en la base.
 
 Los años de lanzamiento y discontinuación se guardan como años, no como fechas
 inventadas. Los rangos de generación abiertos (`año-Ongoing`) guardan el año de
@@ -86,12 +89,23 @@ ese dato con el mapeo de países de origen proporcionado para Atari, Magnavox,
 Mattel, Microsoft, Nintendo, Sega y Sony. El archivo `.db` es generado
 localmente y está excluido de Git.
 
+Para videojuegos, las ventas también se guardan en millones; los valores
+`0.0`, interpretados como ventas no informadas, quedan como `NULL`. Las fechas
+vacías y los publishers/desarrolladores marcados `Unknown` o `N/A` también
+quedan como desconocidos (`NULL`). Se conserva la URL de imagen del CSV en
+`videojuegos`.
+La importación deduplica por título (ignorando mayúsculas/minúsculas) y consola:
+si hay fechas distintas conserva el lanzamiento más antiguo; para duplicados
+con la misma fecha elige la fila más completa y, en caso de empate, la de
+mayores ventas. No suma ventas de duplicados. El mismo título en consolas
+distintas se importa como registros separados.
+
 ### 6. Consultar una consola por ID
 
 Después de preparar la base, ejecutar desde `backend`:
 
 ```powershell
-python -m data.query_console
+python -m tests.query_console
 ```
 
 Ingresar el ID de la consola. El programa muestra sus datos y, de forma
@@ -159,7 +173,7 @@ En la raíz del repositorio hay dos scripts para simplificar el trabajo diario:
 
 | Script | Qué hace |
 |---|---|
-| `build.bat` | Prepara el entorno Python y crea/actualiza la base SQLite desde el CSV, sin borrarla |
+| `build.bat` | Prepara el entorno Python y crea/actualiza la base SQLite desde ambos CSV, sin borrarla |
 | `run.bat` | Levanta el backend y el frontend, cada uno en su propia ventana |
 
 ```bat
@@ -168,6 +182,6 @@ run.bat
 ```
 
 - `run.bat` crea el entorno virtual e instala las dependencias del backend si todavía no están instaladas; también instala las dependencias del frontend la primera vez.
-- `build.bat` crea las tablas que falten e importa o actualiza las consolas del CSV. No borra la base ni los videojuegos existentes.
+- `build.bat` crea las tablas que falten e importa o actualiza consolas y videojuegos. No borra la base ni los datos existentes.
 - `build.bat nopause` omite la pausa final.
 - Para detener los servicios, cerrar cada ventana o presionar `Ctrl+C` en ellas.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -82,6 +84,7 @@ def print_console_details(session: Session, console_id: int) -> bool:
             print(f"    Videojuego #{game.id}: {game.titulo}")
             print(f"      Fecha de lanzamiento: {_show(release_date)}")
             print(f"      Ventas: {_show(game.ventas)}")
+            print(f"      Imagen: {_show(game.imagen_url)}")
             print(f"      Publisher: {publisher}")
             print(f"      Desarrollador: {developer}")
 
@@ -89,6 +92,8 @@ def print_console_details(session: Session, console_id: int) -> bool:
 
 
 def main() -> None:
+    sys.stdout.reconfigure(errors="backslashreplace")
+
     if not DATABASE_PATH.is_file():
         print("No se encontró la base de datos.")
         print("Ejecuta BUILD.bat para crearla y cargar las consolas primero.")

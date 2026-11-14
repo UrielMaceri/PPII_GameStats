@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
@@ -40,7 +41,8 @@ class Videojuego(Base):
         ForeignKey("desarrolladores.id"), nullable=True
     )
     fecha_lanzamiento: Mapped[date | None] = mapped_column(Date, nullable=True)
-    ventas: Mapped[float | None] = mapped_column(Numeric(14, 4), nullable=True)
+    ventas: Mapped[Decimal | None] = mapped_column(Numeric(14, 4), nullable=True)
+    imagen_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
 
     consola: Mapped[Consola] = relationship(back_populates="videojuegos")
     publisher: Mapped[Publisher | None] = relationship(back_populates="videojuegos")
