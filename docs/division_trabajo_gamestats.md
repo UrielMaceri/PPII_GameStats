@@ -287,7 +287,6 @@ Los datos de prueba y las llamadas a la API deben respetar
 [contrato_api_json.md](./contrato_api_json.md).
 
 ### Tareas
-
 1. **Acordar vistas y métricas**
    - Revisar con Lucas las métricas y los formatos de respuesta.
    - Definir con Ivan navegación, nombres de secciones y componentes visuales

@@ -219,7 +219,59 @@ Los elementos se ordenan por `name` ascendente.
 
 ## 5. Estadísticas
 
-Todas las rutas estadísticas aceptan los filtros aplicables de esta lista:
+### Estadísticas disponibles de consolas
+
+`GET /api/estadisticas/consolas` devuelve únicamente agregaciones de la tabla
+de consolas y sus relaciones con fabricantes y generaciones. Las ventas están
+expresadas en millones de unidades, de acuerdo con `Units sold (million)` del
+CSV original. `releasesByDecade` cuenta consolas por década de lanzamiento; no
+representa ventas anuales.
+
+```json
+{
+  "data": {
+    "summary": {
+      "consoleCount": 26,
+      "manufacturerCount": 7,
+      "generationCount": 9,
+      "totalSales": 1230.5
+    },
+    "consoles": [
+      {
+        "id": 15,
+        "name": "PlayStation 2",
+        "sales": 155,
+        "manufacturerId": 6,
+        "manufacturer": "Sony",
+        "generationId": 6,
+        "generation": 6,
+        "releaseYear": 2000
+      }
+    ],
+    "salesByManufacturer": [
+      { "name": "Sony", "sales": 516, "consoleCount": 5 }
+    ],
+    "salesByGeneration": [
+      { "name": "Generación 6", "sales": 210, "consoleCount": 4 }
+    ],
+    "releasesByDecade": [
+      { "decade": "2000s", "consoleCount": 6 }
+    ]
+  },
+  "meta": {
+    "unit": "million_units",
+    "releaseYearBasis": "console_release_year"
+  }
+}
+```
+
+Los juegos no se incluyen en estas estadísticas. Los gráficos sobre ventas de
+videojuegos, publishers o desarrolladores requieren cargar datos de juegos.
+
+### Estadísticas de videojuegos
+
+Las rutas de estadísticas de videojuegos aceptan los filtros aplicables de
+esta lista:
 
 | Parámetro | Tipo | Descripción |
 |---|---|---|
@@ -237,6 +289,9 @@ consulta válida sin datos devuelve `200` con `data: []`.
 `GET /api/estadisticas/juegos-mas-vendidos` también acepta `limit` (entero,
 por defecto `10`, mínimo `1`, máximo `100`) para indicar cuántos resultados
 devolver. Un valor fuera de ese rango devuelve `400 INVALID_REQUEST`.
+Los endpoints `GET /api/estadisticas/ranking-publishers` y
+`GET /api/estadisticas/ranking-desarrolladores` aceptan el mismo parámetro
+`limit`, con el mismo valor predeterminado y rango.
 
 Cada respuesta estadística usa el mismo envoltorio:
 
@@ -255,9 +310,20 @@ Cada respuesta estadística usa el mismo envoltorio:
 
 `meta.unit` indica la unidad de los valores de ventas y debe coincidir con la
 unidad real confirmada del dataset. En el resumen, `gameCount` siempre cuenta
-juegos y `meta.unit` aplica a `totalSales` y a las ventas de `topConsole`.
+juegos, incluso aquellos sin ventas conocidas. `totalSales` suma solo las
+ventas informadas y vale `0` cuando no hay ventas conocidas; `topConsole`
+ordena consolas por la suma de ventas de sus videojuegos, no por las ventas de
+hardware. `meta.unit` aplica a `totalSales`, `topConsole` y todas las métricas
+de ventas.
 `meta.filters` incluye los filtros efectivamente aplicados y vale `{}` si no se
 aplicó ninguno.
+
+La evolución `ventas-por-anio` agrupa las ventas conocidas por el año de
+lanzamiento del videojuego y excluye juegos sin fecha o sin ventas. Los
+rankings cuentan en `gameCount` los juegos asignados a cada publisher o
+desarrollador; si todos sus juegos carecen de ventas, `sales` es `null`. Los
+registros sin publisher o desarrollador se excluyen del ranking respectivo.
+Los empates se resuelven por nombre ascendente.
 
 ### Rutas y forma de cada elemento
 
