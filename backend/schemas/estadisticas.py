@@ -6,6 +6,21 @@ from schemas.catalogo import ItemCatalogo
 ContenidoEstadistica = TypeVar("ContenidoEstadistica")
 
 
+class DetalleErrorApi(CamelModel):
+    field: str
+    message: str
+
+
+class ErrorApi(CamelModel):
+    code: str
+    message: str
+    details: list[DetalleErrorApi]
+
+
+class RespuestaErrorApi(CamelModel):
+    error: ErrorApi
+
+
 class ConsolaEstadistica(CamelModel):
     id: int
     name: str

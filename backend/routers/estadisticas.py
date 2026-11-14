@@ -25,6 +25,7 @@ from schemas.estadisticas import (
     DatosEstadisticasConsolas,
     LanzamientosDecada,
     MetaEstadisticasConsolas,
+    RespuestaErrorApi,
     RespuestaEstadisticasConsolas,
     ResumenConsolas,
     VentasFabricante,
@@ -33,6 +34,17 @@ from schemas.estadisticas import (
 from services.estadisticas_service import EstadisticasService, FiltrosEstadisticas
 
 router = APIRouter(prefix="/api/estadisticas", tags=["Estadísticas"])
+
+RESPUESTAS_ERROR = {
+    400: {
+        "model": RespuestaErrorApi,
+        "description": "Parámetros de consulta inválidos (INVALID_REQUEST).",
+    },
+    500: {
+        "model": RespuestaErrorApi,
+        "description": "Error inesperado del servidor (INTERNAL_ERROR).",
+    },
+}
 
 
 def get_estadisticas_service(
@@ -71,6 +83,9 @@ FiltrosDep = Annotated[FiltrosEstadisticas, Depends(get_filtros)]
 @router.get(
     "/consolas",
     response_model=RespuestaEstadisticasConsolas,
+    responses={
+        500: RESPUESTAS_ERROR[500],
+    },
     summary="Estadísticas basadas en consolas",
 )
 def estadisticas_consolas(
@@ -170,7 +185,11 @@ def estadisticas_consolas(
     )
 
 
-@router.get("/resumen", response_model=RespuestaEstadistica[ResumenVideojuegos])
+@router.get(
+    "/resumen",
+    response_model=RespuestaEstadistica[ResumenVideojuegos],
+    responses=RESPUESTAS_ERROR,
+)
 def resumen_videojuegos(service: EstadisticasDep, filtros: FiltrosDep):
     return RespuestaEstadistica[ResumenVideojuegos](
         data=service.resumen(filtros),
@@ -181,6 +200,7 @@ def resumen_videojuegos(service: EstadisticasDep, filtros: FiltrosDep):
 @router.get(
     "/ventas-por-generacion",
     response_model=RespuestaEstadistica[list[VentasPorGeneracion]],
+    responses=RESPUESTAS_ERROR,
 )
 def ventas_por_generacion(service: EstadisticasDep, filtros: FiltrosDep):
     return RespuestaEstadistica[list[VentasPorGeneracion]](
@@ -192,6 +212,7 @@ def ventas_por_generacion(service: EstadisticasDep, filtros: FiltrosDep):
 @router.get(
     "/ventas-por-consola",
     response_model=RespuestaEstadistica[list[VentasPorConsola]],
+    responses=RESPUESTAS_ERROR,
 )
 def ventas_por_consola(service: EstadisticasDep, filtros: FiltrosDep):
     return RespuestaEstadistica[list[VentasPorConsola]](
@@ -203,6 +224,7 @@ def ventas_por_consola(service: EstadisticasDep, filtros: FiltrosDep):
 @router.get(
     "/ventas-por-fabricante",
     response_model=RespuestaEstadistica[list[VentasPorFabricante]],
+    responses=RESPUESTAS_ERROR,
 )
 def ventas_por_fabricante(service: EstadisticasDep, filtros: FiltrosDep):
     return RespuestaEstadistica[list[VentasPorFabricante]](
@@ -214,6 +236,7 @@ def ventas_por_fabricante(service: EstadisticasDep, filtros: FiltrosDep):
 @router.get(
     "/ranking-publishers",
     response_model=RespuestaEstadistica[list[RankingPublisher]],
+    responses=RESPUESTAS_ERROR,
 )
 def ranking_publishers(
     service: EstadisticasDep,
@@ -229,6 +252,7 @@ def ranking_publishers(
 @router.get(
     "/ranking-desarrolladores",
     response_model=RespuestaEstadistica[list[RankingDeveloper]],
+    responses=RESPUESTAS_ERROR,
 )
 def ranking_desarrolladores(
     service: EstadisticasDep,
@@ -244,6 +268,7 @@ def ranking_desarrolladores(
 @router.get(
     "/ventas-por-anio",
     response_model=RespuestaEstadistica[list[VentasPorAnio]],
+    responses=RESPUESTAS_ERROR,
 )
 def ventas_por_anio(service: EstadisticasDep, filtros: FiltrosDep):
     return RespuestaEstadistica[list[VentasPorAnio]](
@@ -255,6 +280,7 @@ def ventas_por_anio(service: EstadisticasDep, filtros: FiltrosDep):
 @router.get(
     "/juegos-mas-vendidos",
     response_model=RespuestaEstadistica[list[JuegoMasVendido]],
+    responses=RESPUESTAS_ERROR,
 )
 def juegos_mas_vendidos(
     service: EstadisticasDep,
@@ -270,6 +296,7 @@ def juegos_mas_vendidos(
 @router.get(
     "/dominador-por-generacion",
     response_model=RespuestaEstadistica[list[FabricanteDominador]],
+    responses=RESPUESTAS_ERROR,
 )
 def dominador_por_generacion(service: EstadisticasDep, filtros: FiltrosDep):
     return RespuestaEstadistica[list[FabricanteDominador]](

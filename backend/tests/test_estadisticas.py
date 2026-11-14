@@ -262,6 +262,86 @@ def test_ranking_y_filtros_de_videojuegos(client, session_factory, datos):
     assert len(limited["data"]) == 1
 
 
+def test_rankings_resuelven_empates_y_ventas_desconocidas(
+    client, session_factory, datos
+):
+    poblar_juegos(session_factory, datos)
+    with session_factory() as session:
+        alpha_publisher = Publisher(nombre="Alpha Publisher")
+        zulu_publisher = Publisher(nombre="Zulu Publisher")
+        unknown_publisher = Publisher(nombre="Unknown Sales Publisher")
+        alpha_developer = Desarrollador(nombre="Alpha Developer")
+        zulu_developer = Desarrollador(nombre="Zulu Developer")
+        unknown_developer = Desarrollador(nombre="Unknown Sales Developer")
+        session.add_all(
+            [
+                alpha_publisher,
+                zulu_publisher,
+                unknown_publisher,
+                alpha_developer,
+                zulu_developer,
+                unknown_developer,
+            ]
+        )
+        session.flush()
+        session.add_all(
+            [
+                Videojuego(
+                    titulo="Alpha tie",
+                    consola_id=datos["n64"],
+                    publisher_id=alpha_publisher.id,
+                    desarrollador_id=alpha_developer.id,
+                    ventas=5,
+                ),
+                Videojuego(
+                    titulo="Zulu tie",
+                    consola_id=datos["ps1"],
+                    publisher_id=zulu_publisher.id,
+                    desarrollador_id=zulu_developer.id,
+                    ventas=5,
+                ),
+                Videojuego(
+                    titulo="Unknown sales",
+                    consola_id=datos["n64"],
+                    publisher_id=unknown_publisher.id,
+                    desarrollador_id=unknown_developer.id,
+                    ventas=None,
+                ),
+            ]
+        )
+        session.commit()
+
+    publishers = client.get("/api/estadisticas/ranking-publishers").json()["data"]
+    tied_publishers = [item for item in publishers if item["sales"] == 5]
+    unknown_sales_publisher = next(
+        item
+        for item in publishers
+        if item["publisherName"] == "Unknown Sales Publisher"
+    )
+    assert [item["publisherName"] for item in tied_publishers] == [
+        "Alpha Publisher",
+        "Zulu Publisher",
+    ]
+    assert unknown_sales_publisher["sales"] is None
+    assert unknown_sales_publisher["gameCount"] == 1
+
+    developers = client.get(
+        "/api/estadisticas/ranking-desarrolladores"
+    ).json()["data"]
+    tied_developers = [item for item in developers if item["sales"] == 5]
+    unknown_sales_developer = next(
+        item
+        for item in developers
+        if item["developerName"] == "Unknown Sales Developer"
+    )
+    assert [item["developerName"] for item in tied_developers] == [
+        "Alpha Developer",
+        "Zulu Developer",
+    ]
+    assert unknown_sales_developer["sales"] is None
+    assert unknown_sales_developer["gameCount"] == 1
+
+
 @pytest.mark.parametrize(
     "path",
     [
@@ -300,3 +380,34 @@ def test_filtros_invalidos_de_estadisticas(client):
     response = client.get("/api/estadisticas/juegos-mas-vendidos?limit=101")
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "INVALID_REQUEST"
+
+
+def test_openapi_documenta_respuestas_de_error_de_estadisticas(client):
+    openapi = client.get("/openapi.json").json()
+    paths = [
+        "/api/estadisticas/resumen",
+        "/api/estadisticas/ventas-por-generacion",
+        "/api/estadisticas/ventas-por-consola",
+        "/api/estadisticas/ventas-por-fabricante",
+        "/api/estadisticas/ranking-publishers",
+        "/api/estadisticas/ranking-desarrolladores",
+        "/api/estadisticas/ventas-por-anio",
+        "/api/estadisticas/juegos-mas-vendidos",
+        "/api/estadisticas/dominador-por-generacion",
+    ]
+
+    for path in paths:
+        responses = openapi["paths"][path]["get"]["responses"]
+        assert "400" in responses
+        assert "500" in responses
+        assert "422" not in responses
+        assert (
+            responses["400"]["content"]["application/json"]["schema"]["$ref"]
+            == "#/components/schemas/RespuestaErrorApi"
+        )
+
+    console_responses = openapi["paths"]["/api/estadisticas/consolas"]["get"][
+        "responses"
+    ]
+    assert "400" not in console_responses
+    assert "500" in console_responses

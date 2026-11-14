@@ -270,6 +270,8 @@ filtros, estructura de las respuestas y metadatos de unidad.
 
 - Endpoints de estadísticas documentados y conectados a la base acordada.
 - Tabla de correspondencia entre estadística, endpoint, filtros y gráfico.
+- La matriz vigente está en
+  [matriz_estadisticas_dashboard.md](./matriz_estadisticas_dashboard.md).
 - Pruebas que validan agregaciones y filtros con datos conocidos.
 - Matias puede reemplazar los datos de ejemplo por respuestas reales.
 

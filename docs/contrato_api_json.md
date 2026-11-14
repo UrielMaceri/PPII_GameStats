@@ -364,18 +364,19 @@ Ejemplo de ranking:
 }
 ```
 
-## 6. Acuerdos pendientes de validar con los datos
+## 6. Acuerdos validados y compatibilidad
 
-Antes de importar la base y cerrar la implementación:
+El equipo confirmó para el dataset actual:
 
-1. **Uriel** confirma si `releaseYear` representa correctamente la columna de
-   lanzamiento y si hay datos regionales además de ventas totales.
-2. **Uriel** documenta la unidad real de ventas. Si no son millones de copias,
-   actualizar los ejemplos de `meta.unit` y comunicarlo a Lucas y Matias.
-3. **Uriel, Enzo y Lucas** confirman que los filtros, campos opcionales y
-   relaciones coinciden con el dataset y el esquema final.
-4. **Enzo y Lucas** publican todos los errores y respuestas en OpenAPI usando
-   este contrato.
-5. **Matias e Ivan** mantienen sus datos de prueba con las mismas propiedades y
-   tipos definidos aquí, y los reemplazan por llamadas reales durante la
-   integración.
+1. `Release Date` puede contener fecha completa, pero la API publica
+   `releaseYear` como entero; las consultas agrupan por el año de esa fecha.
+2. `Units(m)` representa ventas totales en millones de copias
+   (`million_copies`); el dataset usado no aporta ventas regionales.
+3. Las ventas desconocidas se representan como `null` y no se suman. El
+   importador interpreta `0.0` como venta no informada y lo normaliza a `null`.
+4. Los filtros, relaciones y campos opcionales actuales fueron confirmados
+   contra el modelo final. Matías revisó y aceptó los gráficos y filtros
+   existentes, conectados a los endpoints de estadísticas.
+
+Si cambia el dataset o el modelo, revisar estos acuerdos y actualizar este
+contrato antes de cambiar la API o sus consumidores.
