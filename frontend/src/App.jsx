@@ -284,6 +284,7 @@ function Dashboard({
   onFilterChange,
   onApplyFilters,
   onResetFilters,
+  activeSection,
 }) {
   const topConsole = hardware.consoles[0]
   const manufacturers = Array.from(
@@ -323,22 +324,29 @@ function Dashboard({
         <section className="page-heading">
           <div>
             <p className="eyebrow">PANEL DE ESTADÍSTICAS</p>
-            <h1>Consolas y videojuegos</h1>
+            <h1>
+              {activeSection === 'consoles'
+                ? 'Estadísticas de consolas'
+                : 'Estadísticas de videojuegos'}
+            </h1>
             <p className="page-description">
-              Estadísticas calculadas con los datos importados de hardware y
-              videojuegos.
+              {activeSection === 'consoles'
+                ? 'Explora las ventas y generaciones del hardware registrado.'
+                : 'Analiza ventas, lanzamientos, publishers y desarrolladores.'}
             </p>
           </div>
           <span className="updated-label">Ventas expresadas en millones</span>
         </section>
 
+        {activeSection === 'games' && (
+          <>
         <form className="filter-panel" onSubmit={onApplyFilters}>
           <div className="filter-heading">
             <div>
               <p className="eyebrow">EXPLORAR</p>
               <h2>Filtros de videojuegos</h2>
             </div>
-            <span>Los gráficos de hardware no cambian con estos filtros.</span>
+            <span>Estos filtros solo afectan las estadísticas de videojuegos.</span>
           </div>
           <div className="filter-grid">
             <label className="filter-field">
@@ -408,7 +416,11 @@ function Dashboard({
             </div>
           </div>
         </form>
+          </>
+        )}
 
+        {activeSection === 'consoles' && (
+          <>
         <SectionHeading
           eyebrow="HARDWARE"
           title="Estadísticas de consolas"
@@ -509,7 +521,11 @@ function Dashboard({
             />
           </ChartCard>
         </section>
+          </>
+        )}
 
+        {activeSection === 'games' && (
+          <>
         <SectionHeading
           eyebrow="SOFTWARE"
           title="Estadísticas de videojuegos"
@@ -702,6 +718,8 @@ function Dashboard({
           aparecer en el total de registros, pero no en gráficos que requieren
           esos datos.
         </p>
+          </>
+        )}
       </main>
       <footer className="footer">
         GameStats <span>•</span> Panel de consolas y videojuegos
@@ -710,7 +728,7 @@ function Dashboard({
   )
 }
 
-function App() {
+function StatisticsScreen({ section }) {
   const [base, setBase] = useState({ status: 'loading', data: null })
   const [games, setGames] = useState({ status: 'loading', data: null })
   const [filters, setFilters] = useState(initialFilters)
@@ -722,14 +740,21 @@ function App() {
 
     async function loadBaseData() {
       try {
-        const [hardware, consoles, publishers] = await Promise.all([
-          requestJson('/api/estadisticas/consolas', controller.signal),
-          requestItems('/api/consolas', controller.signal),
-          requestItems('/api/publishers', controller.signal),
-        ])
+        const hardware = await requestJson(
+          '/api/estadisticas/consolas',
+          controller.signal,
+        )
+        let catalogs = { consoles: [], publishers: [] }
+        if (section === 'games') {
+          const [consoles, publishers] = await Promise.all([
+            requestItems('/api/consolas', controller.signal),
+            requestItems('/api/publishers', controller.signal),
+          ])
+          catalogs = { consoles, publishers }
+        }
         setBase({
           status: 'success',
-          data: { hardware, catalogs: { consoles, publishers } },
+          data: { hardware, catalogs },
         })
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -740,10 +765,10 @@ function App() {
 
     loadBaseData()
     return () => controller.abort()
-  }, [])
+  }, [section])
 
   useEffect(() => {
-    if (base.status !== 'success') {
+    if (section !== 'games' || base.status !== 'success') {
       return undefined
     }
 
@@ -771,7 +796,7 @@ function App() {
 
     loadGameStatistics()
     return () => controller.abort()
-  }, [base.status, appliedFilters])
+  }, [base.status, appliedFilters, section])
 
   function handleFilterChange(event) {
     const { name, value } = event.target
@@ -829,6 +854,7 @@ function App() {
 
   return (
     <Dashboard
+      activeSection={section}
       hardware={base.data.hardware}
       catalogs={base.data.catalogs}
       games={games}
@@ -841,87 +867,19 @@ function App() {
   )
 }
 
+export function ConsoleStatisticsPage() {
+  return <StatisticsScreen section="consoles" />
+}
+
+export function GameStatisticsPage() {
+  return <StatisticsScreen section="games" />
+}
+
 export default function App() {
-  const [currentView, setCurrentView] = useState('catalog') // 'catalog' o 'about'
+  const screen = new URLSearchParams(window.location.search).get('screen')
+  if (screen === 'games') {
+    return <GameStatisticsPage />
+  }
 
-  // Contenedores vacíos o placeholders listos para cuando agregues los dashboards
-  const emptyDashboards = [1, 2, 3, 4]
-
-  return (
-    <div className="min-h-screen flex flex-col bg-[#0c121c]">
-      {/* Barra de Navegación */}
-      <header className="topbar sticky top-0 z-50">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentView('catalog')}>
-          <span className="brand-mark">G</span>
-          <span className="brand text-lg font-bold">Observatorio de videojuegos</span>
-        </div>
-        <nav className="flex space-x-6">
-          <button
-            onClick={() => setCurrentView('catalog')}
-            className={`transition-colors font-medium pb-1 border-b-2 ${
-              currentView === 'catalog'
-                ? 'border-[#55d6c2] text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Catálogo
-          </button>
-          <button
-            onClick={() => setCurrentView('about')}
-            className={`transition-colors font-medium pb-1 border-b-2 ${
-              currentView === 'about'
-                ? 'border-[#55d6c2] text-white'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
-            }`}
-          >
-            Sobre nosotros
-          </button>
-        </nav>
-      </header>
-
-      {/* Contenido Principal */}
-      <main className="dashboard flex-1">
-        {currentView === 'catalog' ? (
-          <div>
-            <section className="page-heading">
-              <div>
-                <p className="eyebrow">PANEL PRINCIPAL</p>
-                <h1>Catálogo de dashboards</h1>
-                <p className="page-description">
-                  Espacio reservado para las visualizaciones y métricas del observatorio.
-                </p>
-              </div>
-            </section>
-
-            {/* Grid de cards vacías */}
-            <section className="charts-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-              {emptyDashboards.map((id) => (
-                <article 
-                  key={id} 
-                  className="chart-card flex flex-col items-center justify-center p-8 bg-[#121b28] border border-[#263345] rounded-xl min-h-[220px] text-center"
-                >
-                  <span className="text-xs text-gray-500 font-mono mb-2">#{id}</span>
-                  <p className="text-gray-400 text-sm italic">Dashboard vacío (Próximamente)</p>
-                </article>
-              ))}
-            </section>
-          </div>
-        ) : (
-          /* Sección Sobre nosotros */
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <div className="bg-[#121b28] border border-[#263345] p-12 rounded-2xl max-w-lg w-full shadow-2xl">
-              <span className="text-5xl mb-4 block">🏆</span>
-              <h2 className="text-2xl font-bold text-[#f0f5fa] mb-3">Sobre nosotros</h2>
-              <p className="text-xl text-[#55d6c2] font-semibold">Trabajo final Equipo 4</p>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Pie de página */}
-      <footer className="footer border-t border-[#263345] py-6 text-center text-sm text-[#718198]">
-        Observatorio de videojuegos <span>•</span> Trabajo final Equipo 4 &copy; 2026
-      </footer>
-    </div>
-  )
+  return <ConsoleStatisticsPage />
 }
