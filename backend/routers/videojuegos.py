@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
+from auth import require_admin
 from data.database import get_session
 from schemas.videojuego import (
     Paginacion,
@@ -14,7 +15,11 @@ from schemas.videojuego import (
 )
 from services.videojuego_service import VideojuegoService
 
-router = APIRouter(prefix="/api/videojuegos", tags=["Videojuegos"])
+router = APIRouter(
+    prefix="/api/videojuegos",
+    tags=["Videojuegos"],
+    dependencies=[Depends(require_admin)],
+)
 
 _400 = {400: {"description": "INVALID_REQUEST: parámetros inválidos"}}
 _404 = {404: {"description": "NOT_FOUND: el videojuego no existe"}}

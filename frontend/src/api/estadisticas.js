@@ -1,3 +1,5 @@
+import { getAuthHeaders } from '../auth/session'
+
 export const initialFilters = {
   yearFrom: '',
   yearTo: '',
@@ -21,7 +23,10 @@ export const gameEndpoints = {
 }
 
 export async function requestStatistics(path, signal) {
-  const response = await fetch(path, { signal })
+  const response = await fetch(path, {
+    signal,
+    headers: getAuthHeaders(),
+  })
   if (!response.ok) {
     throw new Error(`La API respondió con estado ${response.status}.`)
   }
@@ -34,7 +39,10 @@ export async function requestStatistics(path, signal) {
 }
 
 export async function requestCatalogItems(path, signal) {
-  const response = await fetch(path, { signal })
+  const response = await fetch(path, {
+    signal,
+    headers: getAuthHeaders(),
+  })
   if (!response.ok) {
     throw new Error(`La API respondió con estado ${response.status}.`)
   }

@@ -23,13 +23,20 @@ if not exist "%PYTHON%" (
 
 "%PYTHON%" -c "import fastapi, sqlalchemy, uvicorn" >nul 2>nul
 if errorlevel 1 (
-    echo Instalando dependencias del backend...
-    "%PYTHON%" -m pip install -r "%BACKEND%\requirements.txt"
+    python -c "import fastapi, sqlalchemy, uvicorn" >nul 2>nul
     if errorlevel 1 (
-        echo.
-        echo [ERROR] Fallo la instalacion del backend. Revisa los mensajes de arriba.
-        if /i not "%~1"=="nopause" pause
-        exit /b 1
+        echo Instalando dependencias del backend...
+        "%PYTHON%" -m pip install -r "%BACKEND%\requirements.txt"
+        if errorlevel 1 (
+            echo.
+            echo [ERROR] No se pudieron instalar las dependencias del backend.
+            echo Verifica la conexion a Internet o instala las dependencias manualmente.
+            if /i not "%~1"=="nopause" pause
+            exit /b 1
+        )
+    ) else (
+        echo Usando dependencias disponibles en la instalacion global de Python.
+        set "PYTHON=python"
     )
 )
 

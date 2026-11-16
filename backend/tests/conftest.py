@@ -46,6 +46,12 @@ def client(session_factory):
 
     app.dependency_overrides[get_session] = _get_session
     with TestClient(app, raise_server_exceptions=False) as c:
+        response = c.post(
+            "/api/auth/login",
+            json={"username": "admin", "password": "admin123"},
+        )
+        assert response.status_code == 200
+        c.headers["Authorization"] = f"Bearer {response.json()['accessToken']}"
         yield c
     app.dependency_overrides.clear()
 

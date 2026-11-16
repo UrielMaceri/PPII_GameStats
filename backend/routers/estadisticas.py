@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
+from auth import get_current_user
 from data.database import get_session
 from errors import SolicitudInvalidaError
 from models.consola import Consola
@@ -33,7 +34,11 @@ from schemas.estadisticas import (
 )
 from services.estadisticas_service import EstadisticasService, FiltrosEstadisticas
 
-router = APIRouter(prefix="/api/estadisticas", tags=["Estadísticas"])
+router = APIRouter(
+    prefix="/api/estadisticas",
+    tags=["Estadísticas"],
+    dependencies=[Depends(get_current_user)],
+)
 
 RESPUESTAS_ERROR = {
     400: {

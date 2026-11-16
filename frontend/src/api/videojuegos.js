@@ -1,3 +1,5 @@
+import { getAuthHeaders } from '../auth/session'
+
 class ApiError extends Error {
   constructor(status, error) {
     super(error?.message ?? `La API respondió con estado ${status}.`)
@@ -11,7 +13,10 @@ class ApiError extends Error {
 async function request(path, options = {}) {
   let response
   try {
-    response = await fetch(path, options)
+    response = await fetch(path, {
+      ...options,
+      headers: getAuthHeaders(options.headers),
+    })
   } catch (error) {
     if (error.name === 'AbortError') {
       throw error

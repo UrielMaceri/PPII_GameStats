@@ -35,6 +35,9 @@ RUN.bat
 
 `BUILD.bat` prepara el entorno virtual del backend si hace falta y crea o actualiza la base de datos importando los CSV de consolas y videojuegos. No borra los datos existentes. `RUN.bat` inicia el backend y el frontend en ventanas separadas; la primera vez instala las dependencias necesarias.
 
+Si el entorno virtual no tiene las dependencias y no hay conexión a Internet,
+ambos scripts reutilizan las del Python global cuando ya están instaladas.
+
 Al iniciar los servicios:
 
 - Aplicación web: <http://localhost:5173>
@@ -88,6 +91,21 @@ Los importadores utilizan `backend/data/docs/Console_Data.csv` y `backend/data/d
 
 Las ventas de consolas se expresan en millones de unidades y las ventas de videojuegos en millones de copias, según sus datasets. Los valores ausentes se conservan como desconocidos; para más detalles sobre importación y formatos, consultar la documentación de la API.
 
+## Acceso y roles
+
+La aplicación requiere iniciar sesión. Las cuentas iniciales son:
+
+| Usuario | Contraseña inicial | Acceso |
+|---|---|---|
+| `admin` | `admin123` | ABM y estadísticas |
+| `usuario` | `usuario123` | Estadísticas |
+
+Las contraseñas se pueden reemplazar mediante `GAMESTATS_ADMIN_PASSWORD` y
+`GAMESTATS_USER_PASSWORD`. Para despliegues, configurar también
+`GAMESTATS_AUTH_SECRET` con una clave aleatoria persistente; los tokens vencen
+a las 12 horas. Si no se define, se genera una clave temporal al iniciar el
+backend y las sesiones dejan de ser válidas al reiniciarlo.
+
 ## API
 
 Todas las rutas comienzan con `/api`. Entre las principales secciones se encuentran:
@@ -95,6 +113,10 @@ Todas las rutas comienzan con `/api`. Entre las principales secciones se encuent
 - `/api/estadisticas/...`: resúmenes, agregaciones y rankings de consolas y videojuegos.
 - `/api/videojuegos`: listado paginado, detalle y operaciones de creación, edición y eliminación.
 - `/api/consolas`, `/api/publishers` y `/api/desarrolladores`: opciones para el catálogo y los formularios.
+
+`/api/estadisticas/...` requiere una sesión iniciada. `/api/videojuegos` requiere
+el rol de administrador. Los selectores de catálogo son de solo lectura y
+permanecen disponibles para los filtros de estadísticas.
 
 La especificación OpenAPI está disponible en `/docs` con el backend en ejecución. El contrato y los documentos funcionales se encuentran en [`docs/`](docs/), especialmente [`contrato_api_json.md`](docs/contrato_api_json.md) y [`matriz_estadisticas_dashboard.md`](docs/matriz_estadisticas_dashboard.md).
 
