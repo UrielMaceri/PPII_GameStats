@@ -10,178 +10,134 @@ Plataforma de análisis y gestión de consolas y videojuegos. Aplicación web qu
 | Frontend | React (Vite) sobre Node.js |
 | Base de datos | SQLite |
 
-## Requisitos previos
+## Descripción
 
-- **Git**
-- **Python 3.10 o posterior**
-- **Node.js LTS** y npm
+GameStats permite explorar estadísticas de consolas y videojuegos, y administrar el catálogo de videojuegos desde una aplicación web. El backend expone una API REST que consulta una base SQLite; el frontend consume esa API para presentar gráficos, filtros y operaciones del catálogo.
 
-Opcionales pero recomendadas:
+La sección de estadísticas incluye métricas de consolas —ventas por fabricante y generación, y lanzamientos por década— y estadísticas de videojuegos como ventas por año, consola, generación y fabricante, rankings de publishers y desarrolladores, juegos más vendidos y filtros por período, consola, generación, fabricante o publisher.
 
-- **Visual Studio Code** con las extensiones Python y ES7+ React/Redux/React-Native snippets.
-- **Postman** o la extensión *REST Client* de VS Code para probar los endpoints de la API.
+El ABM permite listar, buscar, filtrar, crear, editar y eliminar videojuegos. Los selectores de consola, publisher y desarrollador se obtienen del catálogo disponible en la API.
 
-## Puesta en marcha
+## Requisitos
 
-### 1. Clonar el repositorio
+- Python 3.10 o posterior
+- Node.js LTS y npm
+- Git, para clonar el repositorio
 
-```bash
-git clone <URL-DEL-REPOSITORIO>
-cd <NOMBRE-DEL-REPOSITORIO>
+## Inicio rápido en Windows
+
+Desde la raíz del repositorio, ejecutar:
+
+```bat
+BUILD.bat
+RUN.bat
 ```
 
-### 2. Levantar el backend
+`BUILD.bat` prepara el entorno virtual del backend si hace falta y crea o actualiza la base de datos importando los CSV de consolas y videojuegos. No borra los datos existentes. `RUN.bat` inicia el backend y el frontend en ventanas separadas; la primera vez instala las dependencias necesarias.
 
-Desde la raíz del repositorio:
+Al iniciar los servicios:
+
+- Aplicación web: <http://localhost:5173>
+- API y documentación interactiva: <http://127.0.0.1:8000/docs>
+
+Para detenerlos, cerrar las ventanas correspondientes o presionar `Ctrl+C` en cada una.
+
+## Instalación y ejecución manual
+
+### Backend
+
+Desde la raíz del repositorio, crear y activar un entorno virtual e instalar las dependencias:
 
 ```powershell
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+```
+
+Crear o actualizar la base SQLite a partir de los datos incluidos:
+
+```powershell
+python -m data.import_consoles
+python -m data.import_games
+```
+
+Iniciar la API:
+
+```powershell
 python -m uvicorn main:app --reload
 ```
 
-La API estará disponible en `http://127.0.0.1:8000`. FastAPI ofrece su documentación interactiva en `http://127.0.0.1:8000/docs`.
+La API estará disponible en `http://127.0.0.1:8000`. La interfaz interactiva de FastAPI está en `/docs`.
 
-### 3. Levantar el frontend
+### Frontend
 
 En una segunda terminal, desde la raíz del repositorio:
 
-```bash
+```powershell
 cd frontend
 npm install
 npm run dev
 ```
 
-El frontend queda disponible en `http://localhost:5173`.
+La aplicación estará disponible en `http://localhost:5173`. Durante el desarrollo, Vite reenvía las solicitudes `/api` al backend en `http://127.0.0.1:8000`.
 
-Backend y frontend se ejecutan al mismo tiempo, cada uno en su propia terminal.
+## Datos
 
-### 4. Conexión entre frontend y backend
+Los importadores utilizan `backend/data/docs/Console_Data.csv` y `backend/data/docs/scrapped_data.csv`, y guardan la base local en `backend/data/gamestats.db`. La base se genera localmente y no se versiona en Git.
 
-En desarrollo, Vite redirige las llamadas que empiezan con `/api` hacia `http://127.0.0.1:8000`. Las rutas de la API que use el frontend deben comenzar con `/api`.
+Las ventas de consolas se expresan en millones de unidades y las ventas de videojuegos en millones de copias, según sus datasets. Los valores ausentes se conservan como desconocidos; para más detalles sobre importación y formatos, consultar la documentación de la API.
 
-### 5. Crear y poblar la base SQLite
+## API
 
-Desde la raíz del repositorio, ejecutar:
+Todas las rutas comienzan con `/api`. Entre las principales secciones se encuentran:
 
-```powershell
-cd backend
-python -m pip install -r requirements.txt
-python -m data.import_consoles
-python -m data.import_games
-```
+- `/api/estadisticas/...`: resúmenes, agregaciones y rankings de consolas y videojuegos.
+- `/api/videojuegos`: listado paginado, detalle y operaciones de creación, edición y eliminación.
+- `/api/consolas`, `/api/publishers` y `/api/desarrolladores`: opciones para el catálogo y los formularios.
 
-Los importadores crean `backend/data/gamestats.db` y las tablas declaradas por
-los modelos SQLAlchemy. El primero lee `Console_Data.csv` y carga fabricantes,
-generaciones y consolas. El segundo lee `scrapped_data.csv` y carga videojuegos,
-publishers y desarrolladores relacionados con sus consolas. Se pueden volver a
-ejecutar: actualizan los registros fuente y agregan los nuevos, sin borrar datos
-que ya existan en la base.
+La especificación OpenAPI está disponible en `/docs` con el backend en ejecución. El contrato y los documentos funcionales se encuentran en [`docs/`](docs/), especialmente [`contrato_api_json.md`](docs/contrato_api_json.md) y [`matriz_estadisticas_dashboard.md`](docs/matriz_estadisticas_dashboard.md).
 
-Los años de lanzamiento y discontinuación se guardan como años, no como fechas
-inventadas. Los rangos de generación abiertos (`año-Ongoing`) guardan el año de
-fin como desconocido. El valor `ongoing` en discontinuación se representa con
-`sigue_en_produccion`; las ventas se conservan en la unidad de origen del CSV:
-millones de unidades. Como el dataset no incluye países, el importador completa
-ese dato con el mapeo de países de origen proporcionado para Atari, Magnavox,
-Mattel, Microsoft, Nintendo, Sega y Sony. El archivo `.db` es generado
-localmente y está excluido de Git.
+## Pruebas y validaciones
 
-Para videojuegos, las ventas también se guardan en millones; los valores
-`0.0`, interpretados como ventas no informadas, quedan como `NULL`. Las fechas
-vacías y los publishers/desarrolladores marcados `Unknown` o `N/A` también
-quedan como desconocidos (`NULL`). Se conserva la URL de imagen del CSV en
-`videojuegos`.
-La importación deduplica por título (ignorando mayúsculas/minúsculas) y consola:
-si hay fechas distintas conserva el lanzamiento más antiguo; para duplicados
-con la misma fecha elige la fila más completa y, en caso de empate, la de
-mayores ventas. No suma ventas de duplicados. El mismo título en consolas
-distintas se importa como registros separados.
-
-### 6. Consultar una consola por ID
-
-Después de preparar la base, ejecutar desde `backend`:
+Desde `backend`, ejecutar las pruebas:
 
 ```powershell
-python -m tests.query_console
+python -m pytest
 ```
 
-Ingresar el ID de la consola. El programa muestra sus datos y, de forma
-escalonada, el fabricante, la generación y los videojuegos asociados, incluyendo
-publisher y desarrollador cuando están disponibles.
+Desde `frontend`, validar el código y generar la compilación de producción:
 
-## Estructura del proyecto
+```powershell
+npm run lint
+npm run build
+```
+
+## Estructura del repositorio
 
 ```text
-.
-├── backend/
-│   ├── data/             Acceso a datos y configuración de persistencia
-│   ├── models/           Modelos del dominio
-│   ├── repositories/     Consultas y operaciones de persistencia
-│   ├── routers/          Definición y agrupación de rutas de la API
-│   ├── schemas/          Esquemas de entrada y salida de la API
-│   ├── services/         Lógica de negocio
-│   ├── main.py           Aplicación FastAPI
-│   └── requirements.txt  Dependencias de Python
-├── frontend/
-│   └── src/
-│       ├── api/          Módulo común para llamar a la API
-│       ├── components/   Componentes reutilizables
-│       └── pages/        Pantallas (dashboards, catálogo)
-├── data/                 Dataset original (si corresponde)
-└── docs/                 Diagrama ER, diccionario de datos, contrato de la API
+backend/
+  data/          Conexión a SQLite e importadores de datos
+  models/        Modelos de dominio y persistencia
+  repositories/  Consultas y acceso a datos
+  routers/       Rutas de la API
+  schemas/       Esquemas de entrada y salida
+  services/      Lógica de negocio
+  tests/         Pruebas del backend
+frontend/
+  src/api/       Clientes para los endpoints
+  src/components/ Componentes de estadísticas y gestión
+  src/pages/     Pantallas de la aplicación
+docs/            Contrato de API y documentación del proyecto
 ```
-
-## Flujo de trabajo con Git
-
-- La rama `main` debe estar siempre en un estado que compile y funcione.
-- Cada integrante trabaja en su propia rama, por ejemplo `feature/abm-backend` o `feature/dashboards-frontend`.
-- Hacer `git pull` antes de empezar a trabajar y antes de subir cambios.
-- Los cambios llegan a `main` mediante Pull Request, revisado por al menos otra persona.
-
-## Problemas frecuentes
-
-**PowerShell no permite activar el entorno virtual.**
-Es la política de ejecución de Windows. Se puede activar el entorno desde cmd con `.venv\Scripts\activate.bat` o ajustar la política de usuario con:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
-
-**No se encuentra `uvicorn` o `fastapi`.**
-Verificar que el entorno virtual esté activado y correr `python -m pip install -r requirements.txt` desde `backend`.
-
-**El frontend no logra comunicarse con la API.**
-Verificar que el backend esté corriendo en el puerto `8000` y que las llamadas del frontend usen el prefijo `/api`.
 
 ## Integrantes
 
 ### Backend
 - Uriel Maceri (DBA)
 - Enzo Paez
-- Lucas Roman 
+- Lucas Roman
 
 ### Frontend
 - Matias Mamani
 - Ivan Bonanata
-
-## Ejecución rápida (Windows)
-
-En la raíz del repositorio hay dos scripts para simplificar el trabajo diario:
-
-| Script | Qué hace |
-|---|---|
-| `build.bat` | Prepara el entorno Python y crea/actualiza la base SQLite desde ambos CSV, sin borrarla |
-| `run.bat` | Levanta el backend y el frontend, cada uno en su propia ventana |
-
-```bat
-build.bat
-run.bat
-```
-
-- `run.bat` crea el entorno virtual e instala las dependencias del backend si todavía no están instaladas; también instala las dependencias del frontend la primera vez.
-- `build.bat` crea las tablas que falten e importa o actualiza consolas y videojuegos. No borra la base ni los datos existentes.
-- `build.bat nopause` omite la pausa final.
-- Para detener los servicios, cerrar cada ventana o presionar `Ctrl+C` en ellas.
