@@ -23,6 +23,7 @@ class VideojuegoRepository:
         search: str | None,
         consola_id: int | None,
         publisher_id: int | None,
+        developer_id: int | None,
         year_from: int | None,
         year_to: int | None,
         offset: int,
@@ -35,6 +36,8 @@ class VideojuegoRepository:
             condiciones.append(Videojuego.consola_id == consola_id)
         if publisher_id is not None:
             condiciones.append(Videojuego.publisher_id == publisher_id)
+        if developer_id is not None:
+            condiciones.append(Videojuego.desarrollador_id == developer_id)
         if year_from is not None:
             condiciones.append(Videojuego.fecha_lanzamiento >= date(year_from, 1, 1))
         if year_to is not None:

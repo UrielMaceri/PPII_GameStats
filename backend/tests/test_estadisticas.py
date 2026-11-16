@@ -258,6 +258,15 @@ def test_ranking_y_filtros_de_videojuegos(client, session_factory, datos):
     assert combined["data"]["gameCount"] == 2
     assert combined["data"]["totalSales"] == 12.5
 
+    developer_filtered = client.get(
+        f"/api/estadisticas/resumen?developerId={datos['developer']}"
+    ).json()
+    assert developer_filtered["data"]["gameCount"] == 1
+    assert developer_filtered["data"]["totalSales"] == 12.5
+    assert developer_filtered["meta"]["filters"] == {
+        "developerId": datos["developer"],
+    }
+
     limited = client.get("/api/estadisticas/ranking-publishers?limit=1").json()
     assert len(limited["data"]) == 1
 

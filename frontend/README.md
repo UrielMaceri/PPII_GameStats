@@ -1,16 +1,47 @@
-# React + Vite
+# Frontend de GameStats
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React con Vite y React Router. Las rutas principales son `/`,
+`/estadisticas` y `/abm`; `/estadistica` redirige a `/estadisticas`.
 
-Currently, two official plugins are available:
+## Estructura
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `src/App.jsx`: router y menú principal.
+- `src/pages/Estadisticas.jsx`: navegación por pestañas de estadísticas.
+- `src/components/estadisticas/ConsolasTab.jsx`: estadísticas de consolas, sin
+  filtros.
+- `src/components/estadisticas/VideojuegosTab.jsx`: estadísticas de videojuegos
+  y filtros.
+- `src/components/estadisticas/StatisticsComponents.jsx`: gráficos y
+  componentes visuales compartidos.
+- `src/pages/ABM.jsx`: pantalla de administración con pestañas de catálogo.
+- `src/components/abm/VideojuegosTab.jsx`: listado, filtros, formulario y
+  operaciones de videojuegos.
+- `src/api/estadisticas.js`: llamadas y utilidades para las respuestas de la
+  API de estadísticas.
+- `src/api/videojuegos.js`: llamadas CRUD y de catálogo auxiliar para el ABM.
 
-## React Compiler
+La pestaña de consolas consulta sus datos al abrirse. La de videojuegos aplica
+los filtros al consultar las estadísticas de juegos; la información de
+hardware se solicita únicamente para poblar las opciones de fabricante y
+generación.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+La pestaña de videojuegos del ABM está conectada a la API: permite listar,
+buscar, filtrar, crear, editar y eliminar. Las pestañas futuras de consolas,
+desarrolladores y publishers están deshabilitadas hasta sus etapas de
+implementación.
 
-## Expanding the ESLint configuration
+## Desarrollo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Desde esta carpeta:
+
+```bash
+npm install
+npm run dev
+```
+
+Para validar el frontend:
+
+```bash
+npm run lint
+npm run build
+```

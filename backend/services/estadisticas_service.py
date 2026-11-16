@@ -34,6 +34,7 @@ class FiltrosEstadisticas:
     manufacturer_id: int | None = None
     console_id: int | None = None
     publisher_id: int | None = None
+    developer_id: int | None = None
 
     def como_dict(self) -> dict[str, int]:
         values = {
@@ -43,6 +44,7 @@ class FiltrosEstadisticas:
             "manufacturerId": self.manufacturer_id,
             "consoleId": self.console_id,
             "publisherId": self.publisher_id,
+            "developerId": self.developer_id,
         }
         return {key: value for key, value in values.items() if value is not None}
 
@@ -375,4 +377,8 @@ class EstadisticasService:
             statement = statement.where(Videojuego.consola_id == filtros.console_id)
         if filtros.publisher_id is not None:
             statement = statement.where(Videojuego.publisher_id == filtros.publisher_id)
+        if filtros.developer_id is not None:
+            statement = statement.where(
+                Videojuego.desarrollador_id == filtros.developer_id
+            )
         return statement.subquery()

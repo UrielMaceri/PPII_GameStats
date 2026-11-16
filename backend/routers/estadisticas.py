@@ -60,6 +60,7 @@ def get_filtros(
     manufacturer_id: Annotated[int | None, Query(alias="manufacturerId", gt=0)] = None,
     console_id: Annotated[int | None, Query(alias="consoleId", gt=0)] = None,
     publisher_id: Annotated[int | None, Query(alias="publisherId", gt=0)] = None,
+    developer_id: Annotated[int | None, Query(alias="developerId", gt=0)] = None,
 ) -> FiltrosEstadisticas:
     if year_from is not None and year_to is not None and year_from > year_to:
         raise SolicitudInvalidaError(
@@ -73,6 +74,7 @@ def get_filtros(
         manufacturer_id=manufacturer_id,
         console_id=console_id,
         publisher_id=publisher_id,
+        developer_id=developer_id,
     )
 
 

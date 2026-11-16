@@ -284,6 +284,22 @@ def test_filtro_por_publisher(client, datos):
     assert titulos(r) == ["Mario Kart 64", "Super Mario 64", "Zelda OoT"]
 
 
+def test_filtro_por_desarrollador(client, datos):
+    poblar(client, datos)
+    crear(
+        client,
+        datos,
+        title="Juego desarrollado por Nintendo",
+        developerId=datos["developer"],
+    )
+
+    r = client.get(URL, params={"developerId": datos["developer"]})
+
+    assert r.status_code == 200
+    assert titulos(r) == ["Juego desarrollado por Nintendo"]
+    assert r.json()["pagination"]["totalItems"] == 1
+
+
 def test_filtro_por_anios_es_inclusivo(client, datos):
     poblar(client, datos)
     exacto = client.get(URL, params={"yearFrom": 1996, "yearTo": 1996})
@@ -327,6 +343,7 @@ def test_filtros_sin_resultados_devuelven_lista_vacia(client, datos):
         {"pageSize": 101},
         {"yearFrom": 999},
         {"consoleId": 0},
+        {"developerId": 0},
         {"yearFrom": 2000, "yearTo": 1990},
     ],
 )

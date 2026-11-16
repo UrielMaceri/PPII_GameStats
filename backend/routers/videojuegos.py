@@ -41,6 +41,7 @@ def listar(
     search: Annotated[str | None, Query(max_length=255, description="Búsqueda parcial por título")] = None,
     console_id: Annotated[int | None, Query(alias="consoleId", gt=0)] = None,
     publisher_id: Annotated[int | None, Query(alias="publisherId", gt=0)] = None,
+    developer_id: Annotated[int | None, Query(alias="developerId", gt=0)] = None,
     year_from: Annotated[int | None, Query(alias="yearFrom", ge=1000, le=9999)] = None,
     year_to: Annotated[int | None, Query(alias="yearTo", ge=1000, le=9999)] = None,
 ):
@@ -48,6 +49,7 @@ def listar(
         search=search,
         consola_id=console_id,
         publisher_id=publisher_id,
+        developer_id=developer_id,
         year_from=year_from,
         year_to=year_to,
         page=page,
